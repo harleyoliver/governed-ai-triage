@@ -27,7 +27,7 @@ PHONE_PATTERN = re.compile(
 
 # Known-names redaction: a deliberately simple allow-list approach.
 # In production this would be sourced from an HR directory export or
-# an NER model; here it's a static list to keep the PoC dependency-free
+# an NER model; here it's a static list to keep this PoC dependency-free
 # and fully deterministic for tests.
 KNOWN_FIRST_NAMES = {
     "priya", "marcus", "aisha", "daniel", "grace", "liam", "sophie",
@@ -50,12 +50,20 @@ class RedactionResult:
 def _redact_names(text: str, counter: dict) -> str:
     def replace(match: re.Match) -> str:
         word = match.group(0)
-        key = word.lower().strip(".,!?")
+        # Split off a trailing possessive ('s) before checking against the
+        # known-names list.
+        suffix = ""
+        core = word
+        if core.lower().endswith("'s"):
+            suffix = core[-2:]
+            core = core[:-2]
+
+        key = core.lower().strip(".,!?")
         if key in KNOWN_FIRST_NAMES or key in KNOWN_LAST_NAMES:
             counter["n"] += 1
             placeholder = f"[NAME_{counter['n']}]"
-            counter["map"][placeholder] = word
-            return placeholder
+            counter["map"][placeholder] = core
+            return placeholder + suffix
         return word
 
     return re.sub(r"[A-Za-z][A-Za-z'\-]+", replace, text)
@@ -94,7 +102,6 @@ def sanitise_ticket(ticket: dict) -> RedactionResult:
     redacted = dict(ticket)
     fields_redacted: list[str] = []
 
-    # Structured fields: always fully redacted, no partial matching needed.
     if redacted.get("requester_name"):
         counter["n"] += 1
         placeholder = f"[NAME_{counter['n']}]"
@@ -116,8 +123,7 @@ def sanitise_ticket(ticket: dict) -> RedactionResult:
         redacted["requester_phone"] = placeholder
         fields_redacted.append("requester_phone")
 
-    # Free-text fields: regex + known-names sweep, since PII can appear
-    # inline (e.g. "call sophie.mensah.personal@gmail.com about it").
+    # Free-text fields: regex + known-names sweep, since PII can appear inline
     for text_field in ("subject", "body"):
         if redacted.get(text_field):
             original = redacted[text_field]
