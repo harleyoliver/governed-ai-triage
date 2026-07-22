@@ -1,0 +1,9 @@
+{
+  "ticket_id": "TCK-1007",
+  "submitted_at": "2026-07-14T11:30:00+10:00",
+  "requester_name": "Chen Wei",
+  "requester_email": "chen.wei@example-corp.com.au",
+  "requester_phone": "+61 400 773 261",
+  "subject": "Printer on level 3 out of toner",
+  "body": "The level 3 printer near the kitchen is out of toner again. Not urgent, just flagging for when someone's free."
+}

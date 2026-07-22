@@ -1,0 +1,9 @@
+{
+  "ticket_id": "TCK-1008",
+  "submitted_at": "2026-07-14T11:58:00+10:00",
+  "requester_name": "Olivia Marsh",
+  "requester_email": "olivia.marsh@example-corp.com.au",
+  "requester_phone": "03 5221 7734",
+  "subject": "Possible data breach - unexpected login alert",
+  "body": "I got an email saying my account was logged into from an overseas location this morning, around 6am, which definitely wasn't me. I've not clicked anything in the email itself. Wanted to flag this immediately in case it's serious."
+}

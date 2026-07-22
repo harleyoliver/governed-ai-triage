@@ -1,0 +1,9 @@
+{
+  "ticket_id": "TCK-1001",
+  "submitted_at": "2026-07-14T09:12:00+10:00",
+  "requester_name": "Priya Natarajan",
+  "requester_email": "priya.natarajan@example-corp.com.au",
+  "requester_phone": "+61 412 384 021",
+  "subject": "Cannot access shared drive after password reset",
+  "body": "Hi team, I reset my password this morning per the prompt but now I can't open the Finance shared drive at all. I have a report due to my manager by 2pm. Can someone look at this urgently? My employee ID is EMP-4471."
+}

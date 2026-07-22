@@ -1,0 +1,9 @@
+{
+  "ticket_id": "TCK-1006",
+  "submitted_at": "2026-07-14T11:02:00+10:00",
+  "requester_name": "Liam O'Connell",
+  "requester_email": "liam.oconnell@example-corp.com.au",
+  "requester_phone": "0455 118 902",
+  "subject": "New starter access request - starts Monday",
+  "body": "We have a new starter, Sophie Mensah, joining the finance team this coming Monday. Could you set up her standard access package (email, Dataverse finance app, shared drive)? Her personal contact for account setup is sophie.mensah.personal@gmail.com."
+}

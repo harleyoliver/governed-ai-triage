@@ -1,0 +1,9 @@
+{
+  "ticket_id": "TCK-1004",
+  "submitted_at": "2026-07-14T10:20:00+10:00",
+  "requester_name": "Daniel Ferreira",
+  "requester_email": "daniel.ferreira@example-corp.com.au",
+  "requester_phone": "0431 902 774",
+  "subject": "VPN drops every ~20 minutes",
+  "body": "Working from home today and the VPN keeps dropping roughly every 20 minutes. Have to reconnect manually each time. Started this morning, was fine last week."
+}

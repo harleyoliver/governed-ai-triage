@@ -1,0 +1,9 @@
+{
+  "ticket_id": "TCK-1009",
+  "submitted_at": "2026-07-14T12:15:00+10:00",
+  "requester_name": "Ben Castillo",
+  "requester_email": "ben.castillo@example-corp.com.au",
+  "requester_phone": "0412 667 340",
+  "subject": "Password expiry reminder - how do I reset early?",
+  "body": "I got a notice my password expires in 5 days. Can you send me the self-service reset link again? I've lost the bookmark."
+}

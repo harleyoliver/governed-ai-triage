@@ -1,0 +1,9 @@
+{
+  "ticket_id": "TCK-1011",
+  "submitted_at": "2026-07-14T13:05:00+10:00",
+  "requester_name": "James Halloran",
+  "requester_email": "james.halloran@example-corp.com.au",
+  "requester_phone": "0487 220 615",
+  "subject": "Entire finance system down - nobody can process payments",
+  "body": "The finance system just went down completely, page won't load for anyone on the team. We have supplier payments due to run at 3pm today. This is blocking the whole department, please treat as highest priority."
+}
