@@ -1,0 +1,28 @@
+# secrets
+.env
+
+# redaction maps, local-only
+data/redaction_maps/
+*.redaction_map.json
+
+# pipeline outputs
+data/review_queue/*
+data/auto_resolved/*
+!data/review_queue/.gitkeep
+!data/auto_resolved/.gitkeep
+
+# audit log
+audit/
+*.audit.jsonl
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# OS
+.DS_Store
