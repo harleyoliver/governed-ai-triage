@@ -6,8 +6,8 @@ Design intent (see docs/decisions/0002-hash-ledger-idempotency.md):
   not over anything time-dependent, so re-running the pipeline against
   the same input never reprocesses a ticket twice.
 - The ledger is the single source of truth for "have we seen this
-  before" — guardrails, agent calls, and audit logging all check it
-  before doing work.
+  before" guardrails, agent calls, and audit logging all check it
+  before doing any work.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ from pathlib import Path
 # Fields that define ticket identity for hashing. Deliberately excludes
 # nothing time-dependent is included here since submitted_at is stable
 # per-ticket, but if this pipeline ever ingests live/mutable tickets,
-# this is the list to revisit.
+# this is where to revisit.
 HASH_FIELDS = ("ticket_id", "requester_email", "subject", "body")
 
 

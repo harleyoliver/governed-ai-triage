@@ -1,5 +1,5 @@
 """
-PII sanitiser — strips personally identifiable information from a raw
+PII sanitiser - strips personally identifiable information from a raw
 ticket BEFORE it is allowed anywhere near the LLM.
 
 Design intent (see docs/decisions/0001-sanitise-before-send.md):

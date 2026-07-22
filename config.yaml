@@ -1,0 +1,34 @@
+# governed-ai-triage runtime configuration
+# Thresholds and routing policy live here, deliberately kept out of
+# code, so a non-engineer (e.g. a governance lead) can review and
+# adjust policy without touching src/.
+
+model:
+  name: "claude-sonnet-4-6"
+  max_tokens: 1024
+  max_retries: 3
+  backoff_base_seconds: 1.5
+
+guardrails:
+  # Below this confidence, always route to human review regardless
+  # of category/priority.
+  confidence_threshold: 0.75
+
+  # Priorities that always route to human review, no matter the
+  # confidence score.
+  always_review_priorities:
+    - "urgent"
+
+  # If the model returns any risk_flags at all, route to human review.
+  route_on_any_risk_flag: true
+
+ledger:
+  path: "audit/ledger.jsonl"
+
+audit:
+  path: "audit/audit_log.jsonl"
+
+paths:
+  inbox: "data/inbox"
+  review_queue: "data/review_queue"
+  auto_resolved: "data/auto_resolved"
