@@ -1,4 +1,4 @@
-# governed-ai-triage
+# Governed AI Triage Workflow
 
 A governed AI ticket triage pipeline built on interacting with the Claude API. Featuring PII sanitisation, idempotent processing, guardrailed routing, and a
 full audit trail, it's built as a proof-of-concept to demonstrate how I'd approach putting an LLM into a real operational workflow.
@@ -74,27 +74,6 @@ low-confidence, high-priority, or risk-flagged classifications to a review check
 **CI runs without secrets.** `.github/workflows/ci.yml` uses `--mock` mode exclusively so no API keys get stored in the repo's Actions config. [`docs/decisions/0003-mock-mode-in-ci.md`](docs/decisions/0003-mock-mode-in-ci.md).
 
 **Everything is auditable.** Every stage of every ticket writes an entry to `audit/audit_log.jsonl`. This includes sanitisation, ledger checks, model calls with token counts, routing decisions, and review outcomes.
-
-## Project structure
-
-governed-ai-triage/
-├── data/inbox/ synthetic helpdesk tickets (input)
-├── data/review_queue/ tickets awaiting review (output)
-├── data/auto_resolved/ tickets that passed all guardrails (output)
-├── src/
-│ ├── sanitiser.py PII redaction
-│ ├── ledger.py content-hash ledger
-│ ├── agent.py Claude API call + mock agent
-│ ├── guardrails.py routing policy
-│ ├── audit.py audit logging
-│ ├── pipeline.py orchestrator
-│ └── review.py review CLI
-├── prompts/triage_v1.md versioned system prompt
-├── config.yaml thresholds and routing policy
-├── tests/ pytest suite
-├── docs/decisions/ architecture decision records
-├── GOVERNANCE.md data handling & human-in-the-loop policy
-└── .github/workflows/ CI (lint + test + mock pipeline run)
 
 ## Status
 
