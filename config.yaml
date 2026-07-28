@@ -4,31 +4,41 @@
 # adjust policy without touching src/.
 
 model:
-  name: "claude-sonnet-4-6"
-  max_tokens: 1024
-  max_retries: 3
-  backoff_base_seconds: 1.5
+    name: "claude-sonnet-4-6"
+    max_tokens: 1024
+    max_retries: 3
+    backoff_base_seconds: 1.5
 
 guardrails:
-  # Below this confidence, always route to human review regardless
-  # of category/priority.
-  confidence_threshold: 0.75
+    # Below this confidence, always route to human review regardless
+    # of category/priority.
+    confidence_threshold: 0.75
 
-  # Priorities that always route to human review, no matter the
-  # confidence score.
-  always_review_priorities:
-    - "urgent"
+    # Priorities that always route to human review, no matter the
+    # confidence score.
+    always_review_priorities:
+        - "urgent"
 
-  # If the model returns any risk_flags at all, route to human review.
-  route_on_any_risk_flag: true
+    # If the model returns any risk_flags at all, route to human review.
+    route_on_any_risk_flag: true
 
 ledger:
-  path: "audit/ledger.jsonl"
+    path: "audit/ledger.jsonl"
 
 audit:
-  path: "audit/audit_log.jsonl"
+    path: "audit/audit_log.jsonl"
 
 paths:
-  inbox: "data/inbox"
-  review_queue: "data/review_queue"
-  auto_resolved: "data/auto_resolved"
+    inbox: "data/inbox"
+    review_queue: "data/review_queue"
+    auto_resolved: "data/auto_resolved"
+
+jira:
+    base_url: "${JIRA_BASE_URL}" # e.g. https://yourcompany.atlassian.net
+    project_key: "${JIRA_PROJECT_KEY}" # e.g. HELPDESK
+    jql: 'project = ${JIRA_PROJECT_KEY} AND status = "Open" ORDER BY created ASC'
+    max_results: 15
+    label_on_auto_resolve: "ai-triaged"
+    label_on_review: "ai-review-needed"
+    transition_auto_resolve: "Done"
+    transition_review: "In Review"

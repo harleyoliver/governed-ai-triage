@@ -1,0 +1,62 @@
+[
+	{
+		"key": "HELP-101",
+		"fields": {
+			"summary": "Cannot reset password, MFA loop",
+			"description": "User Jane Doe ([email protected], 0412 555 111) stuck in an MFA reset loop since this morning. Tried three times.",
+			"reporter": {
+				"displayName": "Jane Doe",
+				"emailAddress": "[email protected]"
+			},
+			"priority": { "name": "High" },
+			"status": { "name": "Open" },
+			"labels": [],
+			"created": "2026-07-22T09:14:00.000+1000"
+		}
+	},
+	{
+		"key": "HELP-102",
+		"fields": {
+			"summary": "Invoice PDF export is broken",
+			"description": "Finance user Tom Nguyen ([email protected]) reports exported invoices are blank pages since yesterday's release.",
+			"reporter": {
+				"displayName": "Tom Nguyen",
+				"emailAddress": "[email protected]"
+			},
+			"priority": { "name": "Medium" },
+			"status": { "name": "Open" },
+			"labels": [],
+			"created": "2026-07-22T11:02:00.000+1000"
+		}
+	},
+	{
+		"key": "HELP-103",
+		"fields": {
+			"summary": "URGENT — production outage, customer portal down",
+			"description": "Entire customer portal returning 500 errors. Reported by ops lead Priya Shah ([email protected], 0499 222 333). Escalated.",
+			"reporter": {
+				"displayName": "Priya Shah",
+				"emailAddress": "[email protected]"
+			},
+			"priority": { "name": "Highest" },
+			"status": { "name": "Open" },
+			"labels": [],
+			"created": "2026-07-22T13:40:00.000+1000"
+		}
+	},
+	{
+		"key": "HELP-104",
+		"fields": {
+			"summary": "Question about report scheduling",
+			"description": "Not sure if this is a bug or expected — can someone clarify how weekly report schedules work?",
+			"reporter": {
+				"displayName": "Sam Lee",
+				"emailAddress": "[email protected]"
+			},
+			"priority": { "name": "Low" },
+			"status": { "name": "Open" },
+			"labels": [],
+			"created": "2026-07-22T14:20:00.000+1000"
+		}
+	}
+]
