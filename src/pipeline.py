@@ -26,6 +26,7 @@ from agent import MockTriageAgent, TriageAgent
 from audit import AuditLog
 from guardrails import route
 from ingest import load_tickets
+from jira_client import JiraClient
 from ledger import Ledger, compute_ticket_hash
 from sanitiser import sanitise_ticket
 
@@ -33,6 +34,22 @@ from sanitiser import sanitise_ticket
 def load_config(path: str = "config.yaml") -> dict:
     with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
+
+
+def apply_jira_writeback(
+    jira_client: JiraClient, jira_config: dict, ticket_id: str, decision, suggested_response: str
+) -> None:
+    """Reflects a routing decision back onto the JIRA ticket: a comment explaining the outcome, a label for filtering, and a status transition."""
+    if decision.destination == "auto_resolved":
+        jira_client.add_comment(ticket_id, suggested_response)
+        jira_client.add_label(ticket_id, jira_config["label_on_auto_resolve"])
+        jira_client.transition_issue(ticket_id, jira_config["transition_auto_resolve"])
+    else:
+        jira_client.add_comment(
+            ticket_id, "Routed to human review: " + "; ".join(decision.reasons)
+        )
+        jira_client.add_label(ticket_id, jira_config["label_on_review"])
+        jira_client.transition_issue(ticket_id, jira_config["transition_review"])
 
 
 def run_pipeline(
@@ -49,6 +66,11 @@ def run_pipeline(
     ledger = Ledger(config["ledger"]["path"])
     audit = AuditLog(config["audit"]["path"])
     agent = MockTriageAgent() if mock else TriageAgent(config)
+    jira_client = (
+        JiraClient(base_url=config.get("jira", {}).get("base_url"), mock=mock)
+        if source == "jira"
+        else None
+    )
 
     summary = {"processed": 0, "skipped_duplicate": 0, "review_queue": 0, "auto_resolved": 0}
 
@@ -80,6 +102,7 @@ def run_pipeline(
         output_record = {
             "ticket_id": ticket_id,
             "ticket_hash": ticket_hash,
+            "source": ticket.get("source", "local"),
             "redacted_ticket": redaction.redacted_ticket,
             "agent_output": result.output,
             "routing": {"destination": decision.destination, "reasons": decision.reasons},
@@ -90,6 +113,13 @@ def run_pipeline(
 
         audit.log(ticket_hash=ticket_hash, ticket_id=ticket_id, stage="route",
                    model=None, destination=decision.destination, reasons=decision.reasons)
+
+        if jira_client is not None:
+            apply_jira_writeback(
+                jira_client, config["jira"], ticket_id, decision, result.output["suggested_response"]
+            )
+            audit.log(ticket_hash=ticket_hash, ticket_id=ticket_id, stage="jira_writeback",
+                       model=None, destination=decision.destination)
 
         ledger.record(ticket_hash, ticket_id, status="processed")
         summary["processed"] += 1

@@ -17,6 +17,7 @@ def load_local_tickets(inbox: Path) -> list[dict[str, Any]]:
     for ticket_path in sorted(inbox.glob("*.json")):
         ticket = json.loads(ticket_path.read_text(encoding="utf-8"))
         ticket.setdefault("ticket_id", ticket_path.stem)
+        ticket.setdefault("source", "local")
         tickets.append(ticket)
     return tickets
 
@@ -31,6 +32,7 @@ def load_jira_tickets(config: dict[str, Any], mock: bool) -> list[dict[str, Any]
     return [
         {
             "ticket_id": t.key,
+            "source": "jira",
             "requester_name": t.reporter_name,
             "requester_email": t.reporter_email,
             "requester_phone": "",  # JIRA reporter has no phone field; any phone in the description is caught by the body regex
