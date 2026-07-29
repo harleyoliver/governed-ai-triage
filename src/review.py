@@ -1,8 +1,7 @@
 """
 Human review checkpoint
 
-Lists items in the review queue, lets a human approve/reject/edit each
-one, and writes the decision back into the audit log.
+Lists items in the review queue and lets a human approve/reject/edit each one, then writes the decision into the audit log.
 """
 
 from __future__ import annotations
@@ -17,7 +16,8 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from audit import AuditLog  # noqa: E402
+from audit import AuditLog
+from jira_client import JiraClient
 
 
 def load_config(path: str = "config.yaml") -> dict:
@@ -48,12 +48,17 @@ def print_item(record: dict) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Review checkpoint for queued tickets")
     parser.add_argument("--config", default="config.yaml")
+    parser.add_argument(
+        "--mock", action="store_true",
+        help="Use the mock JIRA client for write-back, no API key needed"
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
     review_queue = Path(config["paths"]["review_queue"])
     auto_resolved = Path(config["paths"]["auto_resolved"])
     audit = AuditLog(config["audit"]["path"])
+    jira_client = None  # lazy: only instantiated if a JIRA-sourced ticket is actually reviewed
 
     items = list_queue(review_queue)
     if not items:
@@ -70,15 +75,25 @@ def main() -> None:
         if choice == "s":
             continue
 
+        is_jira = record.get("source") == "jira"
+        if is_jira and jira_client is None:
+            jira_client = JiraClient(base_url=config.get("jira", {}).get("base_url"), mock=args.mock)
+
         if choice == "a":
             shutil.move(str(item_path), auto_resolved / item_path.name)
             audit.log(ticket_hash=record["ticket_hash"], ticket_id=record["ticket_id"],
                        stage="human_review", decision="approved")
+            if is_jira:
+                jira_client.add_comment(record["ticket_id"], record["agent_output"]["suggested_response"])
+                jira_client.add_label(record["ticket_id"], config["jira"]["label_on_auto_resolve"])
+                jira_client.transition_issue(record["ticket_id"], config["jira"]["transition_auto_resolve"])
             print("Approved -> moved to auto_resolved.\n")
 
         elif choice == "r":
             audit.log(ticket_hash=record["ticket_hash"], ticket_id=record["ticket_id"],
                        stage="human_review", decision="rejected")
+            if is_jira:
+                jira_client.add_comment(record["ticket_id"], "AI-suggested response rejected by reviewer.")
             print("Rejected -> left in review_queue for follow-up.\n")
 
         elif choice == "e":
@@ -89,6 +104,10 @@ def main() -> None:
             shutil.move(str(item_path), auto_resolved / item_path.name)
             audit.log(ticket_hash=record["ticket_hash"], ticket_id=record["ticket_id"],
                        stage="human_review", decision="edited_and_approved")
+            if is_jira:
+                jira_client.add_comment(record["ticket_id"], new_response)
+                jira_client.add_label(record["ticket_id"], config["jira"]["label_on_auto_resolve"])
+                jira_client.transition_issue(record["ticket_id"], config["jira"]["transition_auto_resolve"])
             print("Edited and approved -> moved to auto_resolved.\n")
 
         else:

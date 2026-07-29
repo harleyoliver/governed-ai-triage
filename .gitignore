@@ -27,3 +27,5 @@ venv/
 # OS
 .DS_Store
 .venv/
+data/jira_mock/write_log.jsonl
+HANDOFF.md

@@ -1,15 +1,10 @@
 """
-PII sanitiser - strips personally identifiable information from a raw
-ticket BEFORE it is allowed anywhere near the LLM.
+PII sanitiser - strips personally identifiable information from a raw ticket before it's allowed anywhere near the LLM.
 
 Design intent (see docs/decisions/0001-sanitise-before-send.md):
-- Redaction happens synchronously, in-process, before any network call.
-- The redaction map (placeholder -> original value) never leaves the
-  local machine and is never written into the audit log or committed
-  to the repo.
-- Redaction is intentionally conservative: known-names list + regex
-  patterns for emails and AU phone numbers. False positives (over-
-  redacting) are an acceptable trade-off; false negatives are not.
+- Redaction happens synchronously before any network call.
+- The redaction map (placeholder -> original value) never leaves the local machine and is never written into the audit log or committed to the repo.
+- Redaction is intentionally conservative: known-names list + regex patterns for emails and AU phone numbers.
 """
 
 from __future__ import annotations
@@ -19,24 +14,22 @@ from dataclasses import dataclass, field
 
 EMAIL_PATTERN = re.compile(r"[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}")
 
-# Matches common AU phone formats: 04xx xxx xxx, 0x xxxx xxxx, +61 4xx xxx xxx,
-# +61 x xxxx xxxx, with optional spaces.
+# Matches common AU phone formats: 04xx xxx xxx, 0x xxxx xxxx, +61 4xx xxx xxx, +61 x xxxx xxxx, with optional spaces.
 PHONE_PATTERN = re.compile(
     r"(?:\+61\s?[2-478]|0[2-478])[\s-]?\d{4}[\s-]?\d{3,4}"
 )
 
-# Known-names redaction: a deliberately simple allow-list approach.
-# In production this would be sourced from an HR directory export or
-# an NER model; here it's a static list to keep this PoC dependency-free
-# and fully deterministic for tests.
+# Known-names redaction: a deliberately simple allow-list approach. In production this would be sourced from Entra ID or a NER model.
 KNOWN_FIRST_NAMES = {
     "priya", "marcus", "aisha", "daniel", "grace", "liam", "sophie",
     "chen", "olivia", "ben", "fatima", "james", "nadia", "tom",
+    "jane", "sam",
 }
 KNOWN_LAST_NAMES = {
     "natarajan", "webb", "khan", "ferreira", "thompson", "o'connell",
     "mensah", "wei", "marsh", "castillo", "al-rashid", "halloran",
-    "popescu", "reilly",
+    "popescu", "reilly", "doe", "shah",
+    "nguyen", "lee",
 }
 
 
@@ -50,8 +43,7 @@ class RedactionResult:
 def _redact_names(text: str, counter: dict) -> str:
     def replace(match: re.Match) -> str:
         word = match.group(0)
-        # Split off a trailing possessive ('s) before checking against the
-        # known-names list.
+        # Split off a trailing possessive ('s) before checking against the known-names list.
         suffix = ""
         core = word
         if core.lower().endswith("'s"):

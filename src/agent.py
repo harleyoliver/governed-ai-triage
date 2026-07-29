@@ -157,7 +157,7 @@ class MockTriageAgent:
     all can be run without API keys or network calls.
     """
 
-    _CANNED = {
+    _MOCK_RESPONSES = {
         "TCK-1001": {"category": "access_request", "priority": "high", "confidence": 0.88,
                      "risk_flags": [],
                      "suggested_response": "We're looking into your shared drive access now and will have it restored before your 2pm deadline."},
@@ -197,17 +197,29 @@ class MockTriageAgent:
         "TCK-1013": {"category": "other", "priority": "low", "confidence": 0.21,
                      "risk_flags": ["ambiguous_request"],
                      "suggested_response": "Thanks for reaching out — could you give us a bit more detail on what you'd like a call about?"},
+        "HELP-101": {"category": "access_request", "priority": "high", "confidence": 0.84,
+                     "risk_flags": [],
+                     "suggested_response": "Sorry for the MFA trouble — resetting your account's MFA enrolment now so you can log back in."},
+        "HELP-102": {"category": "technical_fault", "priority": "medium", "confidence": 0.89,
+                     "risk_flags": [],
+                     "suggested_response": "Thanks for flagging — we can reproduce the blank invoice export and are rolling back yesterday's release change."},
+        "HELP-103": {"category": "technical_fault", "priority": "urgent", "confidence": 0.92,
+                     "risk_flags": ["financial_impact"],
+                     "suggested_response": "Declaring an incident for the customer portal outage now — engineering is investigating and will post updates shortly."},
+        "HELP-104": {"category": "general_inquiry", "priority": "low", "confidence": 0.8,
+                     "risk_flags": [],
+                     "suggested_response": "Weekly report schedules run automatically each Monday at 6am in the account's local timezone — let us know if you'd like the cadence changed."},
     }
 
     def classify(self, redacted_ticket: dict) -> AgentResult:
         ticket_id = redacted_ticket.get("ticket_id", "")
-        canned = self._CANNED.get(ticket_id, {
+        mock_response = self._MOCK_RESPONSES.get(ticket_id, {
             "category": "other", "priority": "low", "confidence": 0.5,
             "risk_flags": ["ambiguous_request"],
             "suggested_response": "Thanks for your ticket, we'll take a look shortly.",
         })
         return AgentResult(
-            output=canned,
+            output=mock_response,
             input_tokens=250,
             output_tokens=90,
             model="mock-claude-sonnet-4-6",
