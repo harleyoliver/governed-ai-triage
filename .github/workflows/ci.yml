@@ -30,3 +30,6 @@ jobs:
 
             - name: Run pipeline in mock mode (no secrets required)
               run: python src/pipeline.py --mock --reset
+
+            - name: Run pipeline against mock JIRA source (no secrets required)
+              run: python src/pipeline.py --mock --reset --source jira
