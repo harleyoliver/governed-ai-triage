@@ -5,9 +5,9 @@ Run modes:
   --mock   uses MockTriageAgent, no API key or network needed.
   (default) uses the real Claude API via TriageAgent, requires ANTHROPIC_API_KEY in .env.
 
-Idempotency: every ticket's content hash is checked against the ledger
-before any model call is made. Re-running this script against the same
-data/inbox/ never reprocesses a ticket or duplicates a routing decision.
+Idempotency: every ticket's content hash is checked against the ledger before any model call is made. Re-running this script against the same data/inbox/ never reprocesses a ticket or duplicates a routing decision.
+
+Ingest source: --source local (default, data/inbox/*.json) or --source jira (pulls from JIRA Cloud via src/ingest.py + src/jira_client.py). Both sources normalize into the same ticket dict shape before sanitisation.
 """
 
 from __future__ import annotations
@@ -22,11 +22,12 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from agent import MockTriageAgent, TriageAgent  # noqa: E402
-from audit import AuditLog  # noqa: E402
-from guardrails import route  # noqa: E402
-from ledger import Ledger, compute_ticket_hash  # noqa: E402
-from sanitiser import sanitise_ticket  # noqa: E402
+from agent import MockTriageAgent, TriageAgent
+from audit import AuditLog
+from guardrails import route
+from ingest import load_tickets
+from ledger import Ledger, compute_ticket_hash
+from sanitiser import sanitise_ticket
 
 
 def load_config(path: str = "config.yaml") -> dict:
@@ -34,7 +35,9 @@ def load_config(path: str = "config.yaml") -> dict:
         return yaml.safe_load(f)
 
 
-def run_pipeline(config: dict, mock: bool = False, inbox_override: str | None = None) -> dict:
+def run_pipeline(
+    config: dict, mock: bool = False, source: str = "local", inbox_override: str | None = None
+) -> dict:
     """Runs the full pipeline once. Returns a summary dict"""
     paths = config["paths"]
     inbox = Path(inbox_override or paths["inbox"])
@@ -49,10 +52,10 @@ def run_pipeline(config: dict, mock: bool = False, inbox_override: str | None = 
 
     summary = {"processed": 0, "skipped_duplicate": 0, "review_queue": 0, "auto_resolved": 0}
 
-    for ticket_path in sorted(inbox.glob("*.json")):
-        ticket = json.loads(ticket_path.read_text(encoding="utf-8"))
+    tickets = load_tickets(source=source, config=config, mock=mock, inbox=inbox)
+    for ticket in tickets:
         ticket_hash = compute_ticket_hash(ticket)
-        ticket_id = ticket.get("ticket_id", ticket_path.stem)
+        ticket_id = ticket.get("ticket_id", ticket_hash[:12])
 
         if ledger.has_seen(ticket_hash):
             audit.log(ticket_hash=ticket_hash, ticket_id=ticket_id, stage="ledger_check",
@@ -110,16 +113,32 @@ def reset_run_state(config: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Governed AI ticket-triage pipeline")
-    parser.add_argument("--mock", action="store_true", help="Use canned responses, no API key needed")
-    parser.add_argument("--reset", action="store_true", help="Clear ledger/audit/output state before running")
-    parser.add_argument("--config", default="config.yaml")
+    parser.add_argument(
+        "--mock", action="store_true",
+        help="Use mock responses, no API key needed"
+    )
+    parser.add_argument(
+        "--reset",
+        action="store_true",
+        help="Clear ledger/audit/output state before running"
+    )
+    parser.add_argument(
+        "--config",
+        default="config.yaml"
+    )
+    parser.add_argument(
+        "--source",
+        choices=["local", "jira"],
+        default="local",
+        help="Where to pull tickets from (default: local inbox)",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
     if args.reset:
         reset_run_state(config)
 
-    summary = run_pipeline(config, mock=args.mock)
+    summary = run_pipeline(config, mock=args.mock, source=args.source)
     print(json.dumps(summary, indent=2))
 
 
